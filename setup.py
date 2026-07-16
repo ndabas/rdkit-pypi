@@ -12,7 +12,7 @@ from setuptools import Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext as build_ext_orig
 
 # RDKit version to build (tag from github repository)
-rdkit_tag = "Release_2026_03_3"
+rdkit_tag = "Release_2026_03_4"
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -159,30 +159,6 @@ class BuildRDKit(build_ext_orig):
                     if search_exp in line:
                         line = line.replace(search_exp, replace_exp)
                     print(line, end="")
-
-        # Fix a bug in conan or rdkit: target name for numpy is boost::numpy{pyversion} with small 'b'
-        # and not Boost::numpy{pyversion}
-        # Line 312 in 2024_03_06 in CMakeLists.txt
-        # NEW: target_link_libraries(rdkit_py_base INTERFACE "Boost::python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}" "Boost::numpy${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")
-        replace_all(
-            "CMakeLists.txt",
-            'target_link_libraries(rdkit_py_base INTERFACE "Boost::python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}" "Boost::numpy${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")',
-            'target_link_libraries(rdkit_py_base INTERFACE "boost::python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}" "boost::numpy${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}")',
-        )
-
-        if "macosx" in os.environ["CIBW_BUILD"]:
-            # Replace Cairo with cairo because conan uses lower case target names
-            # only on MacOS cairo is installed using conan
-            replace_all(
-                "Code/GraphMol/MolDraw2D/CMakeLists.txt",
-                'target_link_libraries(MolDraw2D PUBLIC Cairo::Cairo)',
-                'target_link_libraries(MolDraw2D PUBLIC cairo::cairo)',
-            )
-            replace_all(
-                "Code/GraphMol/MolDraw2D/CMakeLists.txt",
-                'target_link_libraries(MolDraw2D_static PUBLIC Cairo::Cairo)',
-                'target_link_libraries(MolDraw2D_static PUBLIC cairo::cairo)',
-            )
 
         # introduced in 2024_09_01 for compiling pubchem shape.
         replace_all(
