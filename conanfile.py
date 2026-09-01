@@ -39,6 +39,11 @@ class RDKitConan(ConanFile):
             # tr1 sources ask for, and fails with C3859 / C1076.
             self.options["boost/*"].pch = False
 
+            # boost_context's arm64 assembly does not export make/jump_fcontext, so
+            # the shared boost_coroutine cannot link. RDKit uses neither library.
+            self.options["boost/*"].without_context = True
+            self.options["boost/*"].without_coroutine = True
+
     def requirements(self):
         # Main boost requirement - use modified version
         self.requires("boost/1.85.0@chris/mod_boost")

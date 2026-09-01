@@ -73,11 +73,6 @@ class BuildRDKit(build_ext_orig):
         if sys.platform == "win32":
             cmd += ["--profile:build", "default"]
 
-        # The boost recipe builds b2 with -d0, which hides the failing compiler
-        # command. Raise it to -d2 so arm64 build errors are visible in CI.
-        if "win_arm64" in os.environ["CIBW_BUILD"]:
-            cmd += ["-c", "tools.build:verbosity=verbose"]
-
         # but force build b2 on linux
         if "linux" in sys.platform:
             cmd += ["--build=b2/*", "--profile:build", "default"]
